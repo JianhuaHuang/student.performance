@@ -114,6 +114,7 @@ stat[1:17, c(1:5, 16:17)]
 
 **Visualizing Level Statistics: `ggstat`**
 ```{r,fig.height=18,fig.width=8}
+stat$Variable.IV <- factor(stat$Variable.IV, levels = unique(stat$Variable.IV))
 ggstat(data = stat, var = 'Variable.IV', ncol = 3)
 ```
 
@@ -247,7 +248,7 @@ roc.cv <- resamples(list(
 summary(roc.cv)
 bwplot(roc.cv)
 
-# Statistical Reference using T-test
+# Statistical Test of Model Differences 
 roc.cv.dif <- diff(roc.cv)
 summary(roc.cv.dif)
 bwplot(roc.cv.dif)
@@ -295,9 +296,9 @@ acc.test
 
 ## Conclusion
 <ul class = "incremental">
-- Key Factors: 
+- Key Factors: `r x.select[-1]`
 ```{r}
-summary(lg)
+summary(lg)$coefficients
 ```
 
 - Predictive Models Ranking: 
