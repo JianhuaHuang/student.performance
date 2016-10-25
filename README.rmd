@@ -4,7 +4,6 @@ author: "Jianhua Huang"
 output:
   md_document:
     toc: true
-    variant: markdown_github
 ---
 
 
@@ -323,7 +322,7 @@ save(fit.el, fit.el.o2c, fit.pls, fit.rf, fit.gbm, fit.svm,
   file = 'Data/models_ROC.123456.Rdata')
 ```
 
-## Reference:
+## Reference
 <ul class = "incremental">
 * streamlineR package information: https://github.com/JianhuaHuang/streamlineR 
 * Information Value: http://multithreaded.stitchfix.com/blog/2015/08/13/weight-of-evidence/ 
