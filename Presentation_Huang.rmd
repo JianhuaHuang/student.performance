@@ -1,7 +1,6 @@
 ---
 title: 'Student Performance Prediction and Key Factors Identification'
 author: "Jianhua Huang"
-date: "October 24, 2016"
 output: 
   slidy_presentation:
     fig_width: 7
