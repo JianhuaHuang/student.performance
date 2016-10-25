@@ -1,9 +1,11 @@
--   [Student Performance Prediction and Key Factors Identification](#student-performance-prediction-and-key-factors-identification)
+-   [Student Performance Prediction and Key Factors
+    Identification](#student-performance-prediction-and-key-factors-identification)
     -   [Introduction](#introduction)
     -   [Data Preparation](#data-preparation)
     -   [Exploratory Data Analysis](#exploratory-data-analysis)
     -   [Modeling: Preparation](#modeling-preparation)
-    -   [Modeling: Key Factors Identification](#modeling-key-factors-identification)
+    -   [Modeling: Key Factors
+        Identification](#modeling-key-factors-identification)
     -   [Modeling: Prediction](#modeling-prediction)
     -   [Model Performance](#model-performance)
     -   [Conclusion](#conclusion)
@@ -12,7 +14,12 @@
 Student Performance Prediction and Key Factors Identification
 =============================================================
 
-This document shows a complete workflow of predicting student performance based on a publicly available [dataset](https://archive.ics.uci.edu/ml/datasets/Student+Performance), using different machine learning methods. The [Presentation\_Huang.rmd](Presentation_Huang.rmd) file can be run as a presentation with interactive visualization.
+This document shows a complete workflow of predicting student
+performance based on a publicly available
+[dataset](https://archive.ics.uci.edu/ml/datasets/Student+Performance),
+using different machine learning methods. The
+[Presentation\_Huang.rmd](Presentation_Huang.rmd) file can be run as a
+presentation with interactive visualization.
 
 Introduction
 ------------
@@ -20,7 +27,8 @@ Introduction
 <ul class="incremental">
 **Data Source**
 
-Secondary school student attributes and performance: publicaly available <https://archive.ics.uci.edu/ml/datasets/Student+Performance>
+Secondary school student attributes and performance: publicaly available
+<https://archive.ics.uci.edu/ml/datasets/Student+Performance>
 
     ##      variable                                                 note
     ## 1      school                                    student's school 
@@ -58,7 +66,8 @@ Secondary school student attributes and performance: publicaly available <https:
 **Research Questions**
 
 1.  Is it possible to predict student performance before a class begins?
-2.  What are the important factors driving the performance differences among students?
+2.  What are the important factors driving the performance differences
+    among students?
 
 </ul>
 Data Preparation
@@ -67,22 +76,18 @@ Data Preparation
 <ul class="incremental">
 **Load R Packages**
 
-``` r
-# Load pacakges
-sapply(c('caret', 'e1071', 'knitr', 'reshape2', 'rpart', 'scales', 'gridExtra', 
-  'glmnet', 'doSNOW', 'dplyr', 'ggplot2', 'streamlineR'), 
-  require, character.only = TRUE, quietly = TRUE)
-```
+    # Load pacakges
+    sapply(c('caret', 'e1071', 'knitr', 'reshape2', 'rpart', 'scales', 'gridExtra', 
+      'glmnet', 'doSNOW', 'dplyr', 'ggplot2', 'streamlineR'), 
+      require, character.only = TRUE, quietly = TRUE)
 
 **Load Data**
 
-``` r
-dt.org <- read.csv('data/student.grade.csv')
-dt <- select(dt.org, -famincome)
-dt$grade <- as.factor(dt$grade)
+    dt.org <- read.csv('data/student.grade.csv')
+    dt <- select(dt.org, -famincome)
+    dt$grade <- as.factor(dt$grade)
 
-head(dt, 3)  # top 3 rows
-```
+    head(dt, 3)  # top 3 rows
 
     ##   school sex age address famsize Pstatus Medu Fedu    Mjob    Fjob reason
     ## 1     GP   F  18       U     GT3       A    4    4 at_home teacher course
@@ -101,9 +106,7 @@ head(dt, 3)  # top 3 rows
     ## 2     0
     ## 3     1
 
-``` r
-str(dt)  # data structure
-```
+    str(dt)  # data structure
 
     ## 'data.frame':    395 obs. of  30 variables:
     ##  $ school    : Factor w/ 2 levels "GP","MS": 1 1 1 1 1 1 1 1 1 1 ...
@@ -139,9 +142,7 @@ str(dt)  # data structure
 
 **Exclude Variables Without Variation**
 
-``` r
-nzv(dt, saveMetrics = TRUE)  ## near zero variation
-```
+    nzv(dt, saveMetrics = TRUE)  ## near zero variation
 
     ##            freqRatio percentUnique zeroVar   nzv
     ## school      7.586957     0.5063291   FALSE FALSE
@@ -177,23 +178,23 @@ nzv(dt, saveMetrics = TRUE)  ## near zero variation
 
 **Bin Numerical Variables Based on Univariate Regression: `bin.knn`**
 
-1.  Divide the numerical variable x into small buckets with approximate equal frequences.
+1.  Divide the numerical variable x into small buckets with approximate
+    equal frequences.
 2.  Build a univariate model using x and y
 3.  Get the regression coefficients for all buckets
-4.  Use the KNN algorithm to bin the neighbouring buckets into bigger groups
+4.  Use the KNN algorithm to bin the neighbouring buckets into bigger
+    groups
 
-``` r
-bin.knn(grade ~ famincome, data = dt.org, n.group = 5, min.bucket = 0.06)
-```
+<!-- -->
 
-![](README_files/figure-markdown_github/unnamed-chunk-5-1.png)
+    bin.knn(grade ~ famincome, data = dt.org, n.group = 5, min.bucket = 0.06)
+
+![](README_files/figure-markdown_strict/unnamed-chunk-5-1.png)
 
 **Optimal Binning Based on Decision Tree: `bin.rpart`**
 
-``` r
-rpart(formula = grade ~ famincome, data = dt.org,
-  control = rpart.control(cp = 0.01, minbucket = .05 * nrow(dt.org)))
-```
+    rpart(formula = grade ~ famincome, data = dt.org,
+      control = rpart.control(cp = 0.01, minbucket = .05 * nrow(dt.org)))
 
     ## n= 395 
     ## 
@@ -210,16 +211,12 @@ rpart(formula = grade ~ famincome, data = dt.org,
     ##         30) famincome< 55891 112 23.27679 0.7053571 *
     ##         31) famincome>=55891 132 15.54545 0.8636364 *
 
-``` r
-bin1 <- bin.rpart(formula = grade ~ famincome, data = dt.org,
-  rcontrol = rpart.control(cp = 0.01, minbucket = .05 * nrow(dt.org)))
-```
+    bin1 <- bin.rpart(formula = grade ~ famincome, data = dt.org,
+      rcontrol = rpart.control(cp = 0.01, minbucket = .05 * nrow(dt.org)))
 
     ## famincome : 36812 55848 68492 75904
 
-``` r
-data.frame(value = dt.org$famincome, bin = bin1$bins) %>% head
-```
+    data.frame(value = dt.org$famincome, bin = bin1$bins) %>% head
 
     ##    value                bin
     ## 1 103153            > 75904
@@ -234,15 +231,17 @@ Exploratory Data Analysis
 -------------------------
 
 <ul class="incremental">
-**Level Statistics (Frequence, Rate, and Information Values): `level.stat`**
+**Level Statistics (Frequence, Rate, and Information Values):
+`level.stat`**
 
--   Information Value (IV) is used to evaluate how strong a predcitor can differentiate the good/bad outcomes
+-   Information Value (IV) is used to evaluate how strong a predcitor
+    can differentiate the good/bad outcomes
 -   If IV &lt; 0.02: the predictor has little predicting power
 
-``` r
-stat <- level.stat(dt, y = 'grade')
-stat[1:17, c(1:5, 16:17)]
-```
+<!-- -->
+
+    stat <- level.stat(dt, y = 'grade')
+    stat[1:17, c(1:5, 16:17)]
 
     ##    Variable Group Freq.0 Freq.1 Freq.group      IV          Variable.IV
     ## 1       age    15     21     61         82     Inf        age (IV: Inf)
@@ -265,29 +264,23 @@ stat[1:17, c(1:5, 16:17)]
 
 **Visualizing Level Statistics: `ggstat`**
 
-``` r
-stat$Variable.IV <- factor(stat$Variable.IV, levels = unique(stat$Variable.IV))
-ggstat(data = stat, var = 'Variable.IV', ncol = 3)
-```
+    stat$Variable.IV <- factor(stat$Variable.IV, levels = unique(stat$Variable.IV))
+    ggstat(data = stat, var = 'Variable.IV', ncol = 3)
 
-![](README_files/figure-markdown_github/unnamed-chunk-9-1.png)
+![](README_files/figure-markdown_strict/unnamed-chunk-9-1.png)
 
 **Correlation between Independent Variables: `ggcorr`**
 
-``` r
-col.numeric <- sapply(dt, is.numeric) %>% which %>% names
-cor.mat <- cor(dt[, col.numeric])
-corrplot::corrplot(cor.mat)
-```
+    col.numeric <- sapply(dt, is.numeric) %>% which %>% names
+    cor.mat <- cor(dt[, col.numeric])
+    corrplot::corrplot(cor.mat)
 
-![](README_files/figure-markdown_github/unnamed-chunk-10-1.png)
+![](README_files/figure-markdown_strict/unnamed-chunk-10-1.png)
 
-``` r
-ggcorr(cor.mat, lower = TRUE, var.position = 'diagonal', psize = 2,
-  add.legend = F)
-```
+    ggcorr(cor.mat, lower = TRUE, var.position = 'diagonal', psize = 2,
+      add.legend = F)
 
-![](README_files/figure-markdown_github/unnamed-chunk-10-2.png)
+![](README_files/figure-markdown_strict/unnamed-chunk-10-2.png)
 </ul>
 Modeling: Preparation
 ---------------------
@@ -295,76 +288,67 @@ Modeling: Preparation
 <ul class="incremental">
 **Spliting Data into Training and Test Data sets**
 
-``` r
-levels(dt$grade) <- list(Fail = 0, Pass = 1)  
-set.seed(123456)
-ind.train <- createDataPartition(dt$grade, p = .75, list = FALSE)
-dt.train <- dt[ind.train, ]
-dt.test <- dt[-ind.train, ]
-row.names(dt.train) <- NULL
-row.names(dt.test) <- NULL
-dim(dt.train)
-```
+    levels(dt$grade) <- list(Fail = 0, Pass = 1)  
+    set.seed(123456)
+    ind.train <- createDataPartition(dt$grade, p = .75, list = FALSE)
+    dt.train <- dt[ind.train, ]
+    dt.test <- dt[-ind.train, ]
+    row.names(dt.train) <- NULL
+    row.names(dt.test) <- NULL
+    dim(dt.train)
 
     ## [1] 297  30
 
-``` r
-dim(dt.test)
-```
+    dim(dt.test)
 
     ## [1] 98 30
 
 **Parallel Training Function**
 
-``` r
-train.par <- function(data = dt.train, method, tuneLength = 10, ...) {
-  set.seed(123456)
-  cl <- makeCluster(3)
-  registerDoSNOW(cl)
-  fit <- train(grade ~ .,
-    data = data,
-    method = method,
-    metric = 'ROC', 
-    tuneLength = tuneLength,
-    trControl = trainControl(
-      method = "repeatedcv",
-      number = 10,
-      repeats = 10,
-      classProbs = TRUE,
-      summaryFunction = twoClassSummary),
-    ...)
-  stopCluster(cl)
-  return(fit)
-}
-```
+    train.par <- function(data = dt.train, method, tuneLength = 10, ...) {
+      set.seed(123456)
+      cl <- makeCluster(3)
+      registerDoSNOW(cl)
+      fit <- train(grade ~ .,
+        data = data,
+        method = method,
+        metric = 'ROC', 
+        tuneLength = tuneLength,
+        trControl = trainControl(
+          method = "repeatedcv",
+          number = 10,
+          repeats = 10,
+          classProbs = TRUE,
+          summaryFunction = twoClassSummary),
+        ...)
+      stopCluster(cl)
+      return(fit)
+    }
 
 </ul>
 Modeling: Key Factors Identification
 ------------------------------------
 
 <ul class="incremental">
-**Elastic-Net: A Combination of Ridge and Lasso** \[
-\min_{\beta_0,\beta} \frac{1}{N} \sum_{i=1}^{N} w_i l(y_i,\beta_0+\beta^T x_i) + \lambda\left[(1-\alpha)||\beta||_2^2/2 + \alpha ||\beta||_1\right],
-\]
+**Elastic-Net: A Combination of Ridge and Lasso**
+$$
+\\min\_{\\beta\_0,\\beta} \\frac{1}{N} \\sum\_{i=1}^{N} w\_i l(y\_i,\\beta\_0+\\beta^T x\_i) + \\lambda\\left\[(1-\\alpha)||\\beta||\_2^2/2 + \\alpha ||\\beta||\_1\\right\],
+$$
 
 -   Modeling with Ordinal Variables as Numeric Data
 
-``` r
-fit.el <- train.par(method = 'glmnet')
-```
+<!-- -->
 
-``` r
-fit.el$bestTune
-```
+    fit.el <- train.par(method = 'glmnet')
+
+    fit.el$bestTune
 
     ##    alpha    lambda
     ## 36   0.4 0.1572745
 
-``` r
-# Best Model Coefficients
-coef.el <- coef(fit.el$finalModel, s = fit.el$bestTune$lambda)
-coef.el
-```
+    # Best Model Coefficients
+    coef.el <- coef(fit.el$finalModel, s = fit.el$bestTune$lambda)
+    coef.el
 
     ## 39 x 1 sparse Matrix of class "dgCMatrix"
     ##                            1
@@ -410,14 +394,14 @@ coef.el
 
 -   Convert Unselected Ordinal Variables to Categorical Data
 
-``` r
-x.select <- row.names(coef.el)[(coef.el[, 1] != 0)]
-x.numeric <- sapply(dt.train, is.numeric) %>% which %>% names
-x.o2c <- setdiff(x.numeric, x.select)
-dt.o2c <- dt.train
-dt.o2c[x.o2c] <- lapply(dt.o2c[x.o2c], as.factor)
-str(dt.o2c)
-```
+<!-- -->
+
+    x.select <- row.names(coef.el)[(coef.el[, 1] != 0)]
+    x.numeric <- sapply(dt.train, is.numeric) %>% which %>% names
+    x.o2c <- setdiff(x.numeric, x.select)
+    dt.o2c <- dt.train
+    dt.o2c[x.o2c] <- lapply(dt.o2c[x.o2c], as.factor)
+    str(dt.o2c)
 
     ## 'data.frame':    297 obs. of  30 variables:
     ##  $ school    : Factor w/ 2 levels "GP","MS": 1 1 1 1 1 1 1 1 1 1 ...
@@ -451,14 +435,10 @@ str(dt.o2c)
     ##  $ health    : Factor w/ 5 levels "1","2","3","4",..: 3 3 5 5 1 5 4 3 2 2 ...
     ##  $ grade     : Factor w/ 2 levels "Fail","Pass": 1 1 2 2 2 2 2 2 2 2 ...
 
-``` r
-fit.el.o2c <- train.par(data = dt.o2c, method = 'glmnet')
-```
+    fit.el.o2c <- train.par(data = dt.o2c, method = 'glmnet')
 
-``` r
-coef.el.o2c <- coef(fit.el.o2c$finalModel, s = fit.el.o2c$bestTune$lambda)
-coef.el.o2c
-```
+    coef.el.o2c <- coef(fit.el.o2c$finalModel, s = fit.el.o2c$bestTune$lambda)
+    coef.el.o2c
 
     ## 64 x 1 sparse Matrix of class "dgCMatrix"
     ##                            1
@@ -529,12 +509,12 @@ coef.el.o2c
 
 -   Build Logistic Model with The Selected Variables
 
-``` r
-x.select.o2c <- row.names(coef.el.o2c)[(coef.el.o2c[, 1] != 0)]
-x.mat <- model.matrix(~., data = select(dt.o2c, -grade))[, -1]
-dt.select <- data.frame(x.mat[, x.select.o2c[-1]], grade = dt.o2c$grade)
-head(dt.select)
-```
+<!-- -->
+
+    x.select.o2c <- row.names(coef.el.o2c)[(coef.el.o2c[, 1] != 0)]
+    x.mat <- model.matrix(~., data = select(dt.o2c, -grade))[, -1]
+    dt.select <- data.frame(x.mat[, x.select.o2c[-1]], grade = dt.o2c$grade)
+    head(dt.select)
 
     ##   age failures goout grade
     ## 1  18        0     4  Fail
@@ -544,10 +524,8 @@ head(dt.select)
     ## 5  15        0     2  Pass
     ## 6  15        0     1  Pass
 
-``` r
-lg <- glm(grade ~ ., data = dt.select, family = binomial(link='logit'))
-summary(lg)
-```
+    lg <- glm(grade ~ ., data = dt.select, family = binomial(link='logit'))
+    summary(lg)
 
     ## 
     ## Call:
@@ -574,9 +552,7 @@ summary(lg)
     ## 
     ## Number of Fisher Scoring iterations: 4
 
-``` r
-car::vif(lg)  ## Check Multicollinearity
-```
+    car::vif(lg)  ## Check Multicollinearity
 
     ##      age failures    goout 
     ## 1.025195 1.032554 1.009315
@@ -587,12 +563,10 @@ Modeling: Prediction
 
 **Predictive Models: PLS, RF, GBM, and SVM**
 
-``` r
-fit.pls <- train.par(method = 'pls')  # Partial Least Squares
-fit.rf <- train.par(method = 'rf')  # Random Forest
-fit.gbm <- train.par(method = 'gbm')  # Gradient Boosting Machine
-fit.svm <- train.par(method = 'svmRadial')  # Support Vector Machine
-```
+    fit.pls <- train.par(method = 'pls')  # Partial Least Squares
+    fit.rf <- train.par(method = 'rf')  # Random Forest
+    fit.gbm <- train.par(method = 'gbm')  # Gradient Boosting Machine
+    fit.svm <- train.par(method = 'svmRadial')  # Support Vector Machine
 
 Model Performance
 -----------------
@@ -600,15 +574,13 @@ Model Performance
 <ul class="incremental">
 **ROC of Cross-Validation**
 
-``` r
-roc.cv <- resamples(list(
-  EL = fit.el,
-  PLS = fit.pls,
-  RF = fit.rf,
-  GBM = fit.gbm,
-  SVM = fit.svm))
-summary(roc.cv)
-```
+    roc.cv <- resamples(list(
+      EL = fit.el,
+      PLS = fit.pls,
+      RF = fit.rf,
+      GBM = fit.gbm,
+      SVM = fit.svm))
+    summary(roc.cv)
 
     ## 
     ## Call:
@@ -641,17 +613,13 @@ summary(roc.cv)
     ## GBM 0.6500    0.85   0.85 0.8658    0.90    1    0
     ## SVM 0.7000    0.85   0.90 0.8971    0.95    1    0
 
-``` r
-bwplot(roc.cv)
-```
+    bwplot(roc.cv)
 
-![](README_files/figure-markdown_github/unnamed-chunk-21-1.png)
+![](README_files/figure-markdown_strict/unnamed-chunk-21-1.png)
 
-``` r
-# Statistical Test of Model Differences 
-roc.cv.dif <- diff(roc.cv)
-summary(roc.cv.dif)
-```
+    # Statistical Test of Model Differences 
+    roc.cv.dif <- diff(roc.cv)
+    summary(roc.cv.dif)
 
     ## 
     ## Call:
@@ -685,52 +653,46 @@ summary(roc.cv.dif)
     ## GBM < 2.2e-16 2.609e-05  < 2.2e-16             -0.0312368
     ## SVM < 2.2e-16 1.0000000  < 2.2e-16  3.716e-05
 
-``` r
-bwplot(roc.cv.dif)
-```
+    bwplot(roc.cv.dif)
 
-![](README_files/figure-markdown_github/unnamed-chunk-21-2.png)
+![](README_files/figure-markdown_strict/unnamed-chunk-21-2.png)
 
 **ROC of Test Data**
 
-``` r
-models <- c('fit.el', 'fit.pls', 'fit.rf', 'fit.gbm', 'fit.svm')
-roc.cal <- function(model) {
-  grade.pred <-  predict(get(model), newdata = dt.test, type = 'prob')[, 2]
-  value <- roc(dt.test$grade, grade.pred)
-  df <- data.frame(
-    Model = toupper(gsub('fit.', '', model)),
-    ROC = as.numeric(value$auc),
-    TPR = value$sensitivities,
-    FPR = 1 - value$specificities) %>%
-    arrange(Model, ROC, FPR, TPR) %>%
-    transform(Model.ROC = paste(Model, ':', round(ROC, 3)))
-}
+    models <- c('fit.el', 'fit.pls', 'fit.rf', 'fit.gbm', 'fit.svm')
+    roc.cal <- function(model) {
+      grade.pred <-  predict(get(model), newdata = dt.test, type = 'prob')[, 2]
+      value <- roc(dt.test$grade, grade.pred)
+      df <- data.frame(
+        Model = toupper(gsub('fit.', '', model)),
+        ROC = as.numeric(value$auc),
+        TPR = value$sensitivities,
+        FPR = 1 - value$specificities) %>%
+        arrange(Model, ROC, FPR, TPR) %>%
+        transform(Model.ROC = paste(Model, ':', round(ROC, 3)))
+    }
 
-roc.test <- lapply(models, roc.cal) %>%
-  do.call(rbind, .)
+    roc.test <- lapply(models, roc.cal) %>%
+      do.call(rbind, .)
 
-ggplot(roc.test, aes(x = FPR, y = TPR, color = Model.ROC)) +
-  geom_line(size = 2) +
-  theme_bw()
-```
+    ggplot(roc.test, aes(x = FPR, y = TPR, color = Model.ROC)) +
+      geom_line(size = 2) +
+      theme_bw()
 
-![](README_files/figure-markdown_github/unnamed-chunk-22-1.png)
+![](README_files/figure-markdown_strict/unnamed-chunk-22-1.png)
 
 **Accuracy of Test Data**
 
-``` r
-acc.test <- lapply(models, function(x) {
-  pred <- predict(get(x), dt.test)
-  postResample(pred, dt.test$grade)
-})
+    acc.test <- lapply(models, function(x) {
+      pred <- predict(get(x), dt.test)
+      postResample(pred, dt.test$grade)
+    })
 
-acc.test <- do.call(rbind, acc.test) %>%
-  data.frame(Model = toupper(gsub('fit.', '', models)), .) %>%
-  arrange(desc(Kappa))
+    acc.test <- do.call(rbind, acc.test) %>%
+      data.frame(Model = toupper(gsub('fit.', '', models)), .) %>%
+      arrange(desc(Kappa))
 
-acc.test
-```
+    acc.test
 
     ##   Model  Accuracy     Kappa
     ## 1   GBM 0.6836735 0.2246044
@@ -746,9 +708,9 @@ Conclusion
 <ul class="incremental">
 -   Key Factors: age, failures, goout
 
-``` r
-summary(lg)$coefficients
-```
+<!-- -->
+
+    summary(lg)$coefficients
 
     ##               Estimate Std. Error   z value     Pr(>|z|)
     ## (Intercept)  6.1035174  2.0215996  3.019152 2.534829e-03
@@ -758,18 +720,18 @@ summary(lg)$coefficients
 
 -   Predictive Models Ranking:
 
-``` r
-result.cv <- apply(roc.cv$values[, -1], 2, median) %>% data.frame
-result.groups <- strsplit(row.names(result.cv), '~') %>% do.call(rbind, .) 
+<!-- -->
 
-results <- data.frame(result.groups, result.cv) %>% 
-  dcast(X1 ~ X2) %>% 
-  dplyr::rename(Model = X1, ROC.CV = ROC, Sens.CV = Sens, Spec.CV = Spec) %>%
-  left_join(unique(select(roc.test, Model, ROC.Test = ROC)), by = 'Model') %>%
-  left_join(select(acc.test, Model, Accuracy.Test = Accuracy, Kappa.Test = Kappa)) %>%
-  arrange(desc(ROC.CV))
-results
-```
+    result.cv <- apply(roc.cv$values[, -1], 2, median) %>% data.frame
+    result.groups <- strsplit(row.names(result.cv), '~') %>% do.call(rbind, .) 
+
+    results <- data.frame(result.groups, result.cv) %>% 
+      dcast(X1 ~ X2) %>% 
+      dplyr::rename(Model = X1, ROC.CV = ROC, Sens.CV = Sens, Spec.CV = Spec) %>%
+      left_join(unique(select(roc.test, Model, ROC.Test = ROC)), by = 'Model') %>%
+      left_join(select(acc.test, Model, Accuracy.Test = Accuracy, Kappa.Test = Kappa)) %>%
+      arrange(desc(ROC.CV))
+    results
 
     ##   Model    ROC.CV   Sens.CV Spec.CV  ROC.Test Accuracy.Test Kappa.Test
     ## 1   PLS 0.7288889 0.4000000    0.90 0.6221591     0.6836735  0.2109091
@@ -783,8 +745,10 @@ Reference
 ---------
 
 <ul class="incremental">
--   streamlineR package information: <https://github.com/JianhuaHuang/streamlineR>
--   Information Value: <http://multithreaded.stitchfix.com/blog/2015/08/13/weight-of-evidence/>
+-   streamlineR package information:
+    <https://github.com/JianhuaHuang/streamlineR>
+-   Information Value:
+    <http://multithreaded.stitchfix.com/blog/2015/08/13/weight-of-evidence/>
 -   shinyapp: <https://jianhua.shinyapps.io/powerplants/>
 
 </ul>
