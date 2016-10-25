@@ -1,4 +1,4 @@
--   [Student Performance Prediction and Key Factors Identification](#student-performance-prediction-and-key-factors-identification)
+-   [[Student Performance Prediction and Key Factors Identification](https://jianhua.shinyapps.io/student_performance/)](#student-performance-prediction-and-key-factors-identification)
     -   [Introduction](#introduction)
     -   [Data Preparation](#data-preparation)
     -   [Exploratory Data Analysis](#exploratory-data-analysis)
@@ -9,8 +9,8 @@
     -   [Conclusion](#conclusion)
     -   [Reference](#reference)
 
-Student Performance Prediction and Key Factors Identification
-=============================================================
+[Student Performance Prediction and Key Factors Identification](https://jianhua.shinyapps.io/student_performance/)
+==================================================================================================================
 
 This document shows a complete workflow of predicting student performance based on a publicly available [dataset](https://archive.ics.uci.edu/ml/datasets/Student+Performance), using different machine learning methods. The [Presentation\_Huang.rmd](Presentation_Huang.rmd) file can be run as a presentation with interactive visualization.
 
