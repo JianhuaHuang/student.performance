@@ -12,7 +12,7 @@ output:
 This document shows a complete workflow of predicting student performance based on a publicly available [dataset](https://archive.ics.uci.edu/ml/datasets/Student+Performance), using different machine learning methods. The [Presentation_Huang.rmd](Presentation_Huang.rmd) file can be run as a presentation with interactive visualization. 
 
 
-```{r, include=FALSE}
+```{r setup, include=FALSE}
 rm(list = ls())
 knitr::opts_chunk$set(echo = TRUE, warning=FALSE, message=FALSE)
 ```

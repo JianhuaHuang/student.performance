@@ -186,7 +186,7 @@ nzv(dt, saveMetrics = TRUE)  ## near zero variation
 bin.knn(grade ~ famincome, data = dt.org, n.group = 5, min.bucket = 0.06)
 ```
 
-![](README_files/figure-markdown_github/unnamed-chunk-6-1.png)
+![](README_files/figure-markdown_github/unnamed-chunk-5-1.png)
 
 **Optimal Binning Based on Decision Tree: `bin.rpart`**
 
@@ -270,7 +270,7 @@ stat$Variable.IV <- factor(stat$Variable.IV, levels = unique(stat$Variable.IV))
 ggstat(data = stat, var = 'Variable.IV', ncol = 3)
 ```
 
-![](README_files/figure-markdown_github/unnamed-chunk-10-1.png)
+![](README_files/figure-markdown_github/unnamed-chunk-9-1.png)
 
 **Correlation between Independent Variables: `ggcorr`**
 
@@ -280,14 +280,14 @@ cor.mat <- cor(dt[, col.numeric])
 corrplot::corrplot(cor.mat)
 ```
 
-![](README_files/figure-markdown_github/unnamed-chunk-11-1.png)
+![](README_files/figure-markdown_github/unnamed-chunk-10-1.png)
 
 ``` r
 ggcorr(cor.mat, lower = TRUE, var.position = 'diagonal', psize = 2,
   add.legend = F)
 ```
 
-![](README_files/figure-markdown_github/unnamed-chunk-11-2.png)
+![](README_files/figure-markdown_github/unnamed-chunk-10-2.png)
 </ul>
 Modeling: Preparation
 ---------------------
@@ -645,7 +645,7 @@ summary(roc.cv)
 bwplot(roc.cv)
 ```
 
-![](README_files/figure-markdown_github/unnamed-chunk-22-1.png)
+![](README_files/figure-markdown_github/unnamed-chunk-21-1.png)
 
 ``` r
 # Statistical Test of Model Differences 
@@ -689,7 +689,7 @@ summary(roc.cv.dif)
 bwplot(roc.cv.dif)
 ```
 
-![](README_files/figure-markdown_github/unnamed-chunk-22-2.png)
+![](README_files/figure-markdown_github/unnamed-chunk-21-2.png)
 
 **ROC of Test Data**
 
@@ -715,7 +715,7 @@ ggplot(roc.test, aes(x = FPR, y = TPR, color = Model.ROC)) +
   theme_bw()
 ```
 
-![](README_files/figure-markdown_github/unnamed-chunk-23-1.png)
+![](README_files/figure-markdown_github/unnamed-chunk-22-1.png)
 
 **Accuracy of Test Data**
 
